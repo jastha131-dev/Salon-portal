@@ -6,6 +6,7 @@ import { reviewSchema } from './review'
 import { homepageContentSchema } from './homepageContent'
 import { siteSettingsSchema } from './siteSettings'
 import { bookingSchema } from './booking'
+import { branchSchema } from './branch'
 
 export const schemaTypes = [
   categorySchema,
@@ -16,4 +17,5 @@ export const schemaTypes = [
   homepageContentSchema,
   siteSettingsSchema,
   bookingSchema,
+  branchSchema,
 ]
