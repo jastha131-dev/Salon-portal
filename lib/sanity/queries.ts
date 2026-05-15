@@ -1,6 +1,7 @@
 export const servicesQuery = `
 *[_type == "service"] | order(name asc) {
-  _id, name, slug, price, duration, description, image, featured,
+  _id, name, slug, price, discountPrice, duration, description, image, featured,
+  popularBadge, preparationNotes, addOns,
   "category": category->{ _id, name, slug, icon, displayOrder }
 }`
 
@@ -12,13 +13,15 @@ export const featuredServicesQuery = `
 
 export const servicesByCategory = `
 *[_type == "service" && category->slug.current == $categorySlug] | order(name asc) {
-  _id, name, slug, price, duration, description, image, featured,
+  _id, name, slug, price, discountPrice, duration, description, image, featured,
+  popularBadge, preparationNotes, addOns,
   "category": category->{ _id, name, slug, icon }
 }`
 
 export const serviceBySlugQuery = `
 *[_type == "service" && slug.current == $slug][0] {
-  _id, name, slug, price, duration, description, image, gallery, seoTitle, seoDescription,
+  _id, name, slug, price, discountPrice, duration, description, image, gallery,
+  popularBadge, preparationNotes, addOns, seoTitle, seoDescription,
   "category": category->{ _id, name, slug, icon }
 }`
 

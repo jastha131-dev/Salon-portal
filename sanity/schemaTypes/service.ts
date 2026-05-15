@@ -60,6 +60,39 @@ export const serviceSchema = defineType({
       initialValue: false,
     }),
     defineField({
+      name: 'discountPrice',
+      title: 'Discount Price (AED)',
+      type: 'number',
+      description: 'If set, the original price shows crossed out and this is displayed as the current price.',
+    }),
+    defineField({
+      name: 'popularBadge',
+      title: 'Show "Popular" Badge',
+      type: 'boolean',
+      initialValue: false,
+    }),
+    defineField({
+      name: 'preparationNotes',
+      title: 'Preparation Notes',
+      type: 'text',
+      description: 'What should the customer know before arriving for this service?',
+    }),
+    defineField({
+      name: 'addOns',
+      title: 'Add-ons',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            { name: 'name', title: 'Name', type: 'string' },
+            { name: 'price', title: 'Price (AED)', type: 'number' },
+            { name: 'duration', title: 'Duration (e.g. 15 min)', type: 'string' },
+          ],
+        },
+      ],
+    }),
+    defineField({
       name: 'seoTitle',
       title: 'SEO Title',
       type: 'string',
