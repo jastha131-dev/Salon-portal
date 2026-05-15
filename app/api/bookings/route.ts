@@ -67,36 +67,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const bookingRef = body.bookingRef?.trim() || generateBookingRef()
-
-    const doc = {
-      _type: 'booking' as const,
-      bookingRef,
-      customerName: body.customerName!.trim(),
-      customerEmail: body.customerEmail?.trim() || '',
-      customerPhone: body.customerPhone!.trim(),
-      ...(body.serviceId
-        ? { service: { _type: 'reference' as const, _ref: body.serviceId } }
-        : {}),
-      bookingDate: body.bookingDate!,
-      timeSlot: body.timeSlot!,
-      notes: body.notes?.trim() || '',
-      isHomeService: body.isHomeService ?? false,
-      homeAddress: body.isHomeService ? (body.homeAddress?.trim() || '') : '',
-      status: 'pending' as const,
-      createdAt: new Date().toISOString(),
-    }
-
-    const result = await writeClient.create(doc)
+    const { createBooking } = await import('@/lib/booking/bookingService')
+    const result = await createBooking(body)
 
     return NextResponse.json(
       {
         data: {
-          id: result._id,
-          bookingRef: doc.bookingRef,
-          status: doc.status,
-          bookingDate: doc.bookingDate,
-          timeSlot: doc.timeSlot,
+          id: result.id,
+          bookingRef: result.bookingRef,
+          status: 'pending',
+          bookingDate: body.bookingDate,
+          timeSlot: body.timeSlot,
         },
         error: null,
       },
