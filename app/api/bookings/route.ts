@@ -22,7 +22,8 @@ function validateBookingBody(body: Partial<Booking>): string | null {
   if (!DATE_REGEX.test(body.bookingDate)) return 'bookingDate must be in YYYY-MM-DD format'
   if (!body.timeSlot) return 'timeSlot is required'
   if (!TIME_REGEX.test(body.timeSlot)) return 'timeSlot must be in HH:MM format'
-  if (body.customerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.customerEmail)) {
+  if (!body.customerEmail?.trim()) return 'customerEmail is required'
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.customerEmail.trim())) {
     return 'Invalid email address format'
   }
   if (body.isHomeService && !body.homeAddress?.trim()) {

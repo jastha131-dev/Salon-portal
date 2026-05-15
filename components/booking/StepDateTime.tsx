@@ -53,7 +53,7 @@ export function StepDateTime() {
       updateBooking({ bookingDate: format(selected, 'yyyy-MM-dd'), timeSlot: undefined })
       fetchSlots(selected)
     }
-  }, [selected]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [selected, fetchSlots])
 
   const handleSlotSelect = (slot: string) => {
     updateBooking({ timeSlot: slot })
