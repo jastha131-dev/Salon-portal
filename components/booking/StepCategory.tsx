@@ -21,7 +21,7 @@ export function StepCategory() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {categories.map((cat, i) => {
           const Icon = cat.icon
-          const selected = booking.serviceId === cat.id
+          const selected = booking.categorySlug === cat.id
           return (
             <motion.button
               key={cat.id}
@@ -29,7 +29,7 @@ export function StepCategory() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.07 }}
               onClick={() => {
-                updateBooking({ serviceId: cat.id })
+                updateBooking({ categorySlug: cat.id })
                 nextStep()
               }}
               className={`flex flex-col items-center p-6 border-2 transition-all duration-300 text-center hover:-translate-y-1 ${
