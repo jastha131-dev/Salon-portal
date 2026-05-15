@@ -11,13 +11,19 @@ interface BookingState {
   resetBooking: () => void
 }
 
+const initialBooking: Partial<Booking> = {
+  selectedAddOns: [],
+  isAnyStaff: true,
+  isHomeService: false,
+  paymentMethod: 'cash',
+}
+
 export const useBookingStore = create<BookingState>((set) => ({
   step: 1,
-  booking: {},
+  booking: initialBooking,
   setStep: (step) => set({ step }),
-  nextStep: () => set((state) => ({ step: Math.min(state.step + 1, 5) })),
+  nextStep: () => set((state) => ({ step: Math.min(state.step + 1, 8) })),
   prevStep: () => set((state) => ({ step: Math.max(state.step - 1, 1) })),
-  updateBooking: (data) =>
-    set((state) => ({ booking: { ...state.booking, ...data } })),
-  resetBooking: () => set({ step: 1, booking: {} }),
+  updateBooking: (data) => set((state) => ({ booking: { ...state.booking, ...data } })),
+  resetBooking: () => set({ step: 1, booking: initialBooking }),
 }))
