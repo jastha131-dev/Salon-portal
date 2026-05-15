@@ -50,7 +50,7 @@ export function StepDateTime() {
 
   useEffect(() => {
     if (selected) {
-      updateBooking({ bookingDate: format(selected, 'yyyy-MM-dd'), timeSlot: undefined as any })
+      updateBooking({ bookingDate: format(selected, 'yyyy-MM-dd'), timeSlot: undefined })
       fetchSlots(selected)
     }
   }, [selected]) // eslint-disable-line react-hooks/exhaustive-deps

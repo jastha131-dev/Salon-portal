@@ -54,7 +54,7 @@ export function StepConfirmation() {
         setLoading(false)
         return
       }
-      setBookingRef(data.data.bookingRef)
+      setBookingRef(data.data?.bookingRef ?? '')
       setSubmitted(true)
     } catch {
       setError('Network error. Please try again.')
@@ -100,7 +100,7 @@ export function StepConfirmation() {
   }
 
   const locationLabel = booking.isHomeService
-    ? `Home Service — ${booking.area || ''}, ${booking.homeAddress || ''}`
+    ? `Home Service — ${[booking.area, booking.homeAddress].filter(Boolean).join(', ')}`
     : booking.branchName || '—'
 
   return (
