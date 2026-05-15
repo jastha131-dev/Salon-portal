@@ -64,3 +64,14 @@ export const siteSettingsQuery = `
   salonName, tagline, address, phone, email, whatsappNumber,
   googleMapsUrl, businessHours, socialLinks
 }`
+
+export const staffQuery = `
+*[_type == "teamMember" && isActive == true] | order(name asc) {
+  _id, name, slug, role, expertise, rating, experienceYears,
+  image, workingHours, blockedDates, socialLinks
+}`
+
+export const branchesQuery = `
+*[_type == "branch"] | order(displayOrder asc) {
+  _id, name, address, phone, mapUrl, image, workingHours
+}`

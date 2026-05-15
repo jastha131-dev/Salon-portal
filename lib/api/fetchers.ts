@@ -11,6 +11,8 @@ import {
   featuredReviewsQuery,
   homepageContentQuery,
   siteSettingsQuery,
+  staffQuery,
+  branchesQuery,
 } from '@/lib/sanity/queries'
 import type {
   Service,
@@ -21,6 +23,8 @@ import type {
   HomepageContent,
   SiteSettings,
   ReviewSummary,
+  StaffMember,
+  Branch,
 } from '@/types'
 
 async function safeFetch<T>(query: string, params?: Record<string, unknown>, fallback?: T): Promise<T> {
@@ -90,4 +94,12 @@ export async function getHomepageContent(): Promise<HomepageContent | null> {
 
 export async function getSiteSettings(): Promise<SiteSettings | null> {
   return safeFetch<SiteSettings | null>(siteSettingsQuery, {}, null)
+}
+
+export async function getStaff(): Promise<StaffMember[]> {
+  return safeFetch<StaffMember[]>(staffQuery, {}, [])
+}
+
+export async function getBranches(): Promise<Branch[]> {
+  return safeFetch<Branch[]>(branchesQuery, {}, [])
 }
