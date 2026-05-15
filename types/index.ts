@@ -20,6 +20,10 @@ export interface Service {
   gallery?: SanityImage[]
   seoTitle?: string
   seoDescription?: string
+  discountPrice?: number
+  popularBadge?: boolean
+  preparationNotes?: string
+  addOns?: AddOn[]
 }
 
 export interface TeamMember {
@@ -100,6 +104,53 @@ export interface BusinessHour {
   closed: boolean
 }
 
+export interface AddOn {
+  _key: string
+  name: string
+  price: number
+  duration?: string
+}
+
+export type PaymentMethod = 'cash' | 'card' | 'online'
+
+export interface WorkingHour {
+  day: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday'
+  startTime: string
+  endTime: string
+  closed?: boolean
+}
+
+export interface Branch {
+  _id: string
+  name: string
+  address: string
+  phone?: string
+  mapUrl?: string
+  image?: SanityImage
+  workingHours: WorkingHour[]
+  displayOrder?: number
+}
+
+export interface StaffMember {
+  _id: string
+  name: string
+  slug: { current: string }
+  role: string
+  expertise: string[]
+  bio?: any
+  image?: SanityImage
+  rating: number
+  experienceYears: number
+  isActive: boolean
+  workingHours: WorkingHour[]
+  blockedDates: string[]
+  socialLinks?: {
+    instagram?: string
+    facebook?: string
+    tiktok?: string
+  }
+}
+
 export interface SanityImage {
   _type: 'image'
   asset: {
@@ -120,14 +171,27 @@ export interface Booking {
   customerName: string
   customerEmail: string
   customerPhone: string
+  customerWhatsApp?: string
+  categorySlug?: string
   serviceId: string
   serviceName?: string
+  servicePrice?: number
+  selectedAddOns: AddOn[]
+  staffId?: string
+  staffName?: string
+  isAnyStaff: boolean
+  branchId?: string
+  branchName?: string
+  isHomeService: boolean
+  homeAddress?: string
+  area?: string
   bookingDate: string
   timeSlot: string
   notes?: string
-  isHomeService: boolean
-  homeAddress?: string
+  paymentMethod: PaymentMethod
+  paymentStatus?: 'pending' | 'paid' | 'refunded'
   status?: 'pending' | 'confirmed' | 'cancelled'
+  totalPrice?: number
 }
 
 export interface TimeSlot {
