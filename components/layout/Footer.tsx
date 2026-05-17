@@ -45,7 +45,8 @@ export function Footer() {
         <div className="h-px bg-gradient-to-r from-transparent via-rose-primary to-transparent opacity-60 mt-1" />
 
         {/* ── Top grid section ─────────────────────────────────── */}
-        <div className="container-luxury pt-20 pb-16 md:pt-28 md:pb-20">
+        <div className="container-luxury">
+          <div className="pt-14 pb-8 md:pt-18 md:pb-10">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
 
             {/* ── Brand column ────────────────────────────────── */}
@@ -201,6 +202,7 @@ export function Footer() {
                 </div>
               </div>
             </div>
+          </div>
           </div>
         </div>
 
