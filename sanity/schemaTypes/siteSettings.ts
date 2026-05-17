@@ -62,6 +62,27 @@ export const siteSettingsSchema = defineType({
       ],
     }),
     defineField({
+      name: 'servicesHeroImage',
+      title: 'Services Page — Hero Background Image',
+      type: 'image',
+      options: { hotspot: true },
+      description: 'Background photo shown on the /services page hero section.',
+    }),
+    defineField({
+      name: 'aboutHeroImage',
+      title: 'About Page — Hero Background Image',
+      type: 'image',
+      options: { hotspot: true },
+      description: 'Background photo shown on the /about page hero section.',
+    }),
+    defineField({
+      name: 'contactHeroImage',
+      title: 'Contact Page — Hero Background Image',
+      type: 'image',
+      options: { hotspot: true },
+      description: 'Background photo shown on the /contact page hero section.',
+    }),
+    defineField({
       name: 'socialLinks',
       title: 'Social Links',
       type: 'object',

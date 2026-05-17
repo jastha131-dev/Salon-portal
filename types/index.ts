@@ -62,6 +62,28 @@ export interface Review {
   publishedAt: string
 }
 
+export interface PlanFeature {
+  text: string
+  included: boolean
+}
+
+export interface Plan {
+  _id: string
+  name: string
+  slug: { current: string }
+  tagline?: string
+  monthlyPrice: number
+  yearlyPrice?: number
+  highlight?: string
+  badge?: string
+  popular: boolean
+  color?: 'rose' | 'gold' | 'charcoal'
+  features: PlanFeature[]
+  ctaText?: string
+  ctaLink?: string
+  order: number
+}
+
 export interface ReviewSummary {
   averageRating: number
   totalCount: number
@@ -95,6 +117,9 @@ export interface SiteSettings {
     tiktok?: string
     youtube?: string
   }
+  servicesHeroImage?: SanityImage
+  aboutHeroImage?: SanityImage
+  contactHeroImage?: SanityImage
 }
 
 export interface BusinessHour {

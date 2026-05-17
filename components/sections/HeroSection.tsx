@@ -1,26 +1,53 @@
 'use client'
+import Image from 'next/image'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
+import { useRef } from 'react'
+import { urlFor } from '@/lib/sanity/image'
+import type { SanityImage } from '@/types'
 
 const words = ['Elevate', 'Your', 'Beauty']
 
-export function HeroSection() {
+export function HeroSection({ heroImage }: { heroImage: SanityImage | null }) {
+  const ref = useRef<HTMLElement>(null)
+  const imageUrl = heroImage?.asset ? urlFor(heroImage).width(1920).height(1080).url() : null
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
+  const bgY = useTransform(scrollYProgress, [0, 1], ['0%', '30%'])
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-charcoal">
-      {/* Background gradient mesh */}
-      <div className="absolute inset-0 bg-gradient-to-br from-charcoal via-[#2A1520] to-[#1C1C2E]" />
+    <section ref={ref} className="relative min-h-screen flex items-center justify-center overflow-hidden bg-charcoal">
+      {/* Parallax background */}
+      <motion.div className="absolute inset-0" style={{ y: bgY }}>
+        {imageUrl && (
+          <Image src={imageUrl} alt="Hero background" fill className="object-cover opacity-50" priority unoptimized />
+        )}
+      </motion.div>
+
+      {/* Gradient overlays */}
+      <div className="absolute inset-0 bg-linear-to-br from-charcoal/80 via-[#2A1520]/60 to-charcoal/80" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_50%,rgba(201,104,122,0.15),transparent_60%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_70%,rgba(201,168,76,0.08),transparent_60%)]" />
 
-      {/* Decorative lines */}
-      <div className="absolute top-1/4 left-8 w-px h-32 bg-gradient-to-b from-transparent via-gold-accent to-transparent opacity-40" />
-      <div className="absolute bottom-1/4 right-8 w-px h-32 bg-gradient-to-b from-transparent via-rose-light to-transparent opacity-40" />
-      <div className="absolute top-1/3 right-12 w-20 h-px bg-gradient-to-r from-transparent via-gold-accent to-transparent opacity-40" />
+      {/* Floating decorative lines */}
+      <motion.div
+        animate={{ opacity: [0.3, 0.6, 0.3], scaleY: [1, 1.1, 1] }}
+        transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
+        className="absolute top-1/4 left-8 w-px h-32 bg-linear-to-b from-transparent via-gold-accent to-transparent"
+      />
+      <motion.div
+        animate={{ opacity: [0.3, 0.6, 0.3], scaleY: [1, 1.1, 1] }}
+        transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut', delay: 1.5 }}
+        className="absolute bottom-1/4 right-8 w-px h-32 bg-linear-to-b from-transparent via-rose-light to-transparent"
+      />
+      <motion.div
+        animate={{ opacity: [0.3, 0.6, 0.3], scaleX: [1, 1.15, 1] }}
+        transition={{ repeat: Infinity, duration: 5, ease: 'easeInOut', delay: 0.8 }}
+        className="absolute top-1/3 right-12 w-20 h-px bg-linear-to-r from-transparent via-gold-accent to-transparent"
+      />
 
       {/* Content */}
       <div className="relative z-10 container-luxury text-center">
-        {/* Eyebrow */}
         <motion.p
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -30,7 +57,6 @@ export function HeroSection() {
           Luxury Beauty · Dubai
         </motion.p>
 
-        {/* Headline - word by word */}
         <h1 className="font-playfair text-5xl md:text-7xl lg:text-8xl font-medium text-warm-white mb-2 leading-tight">
           {words.map((word, i) => (
             <motion.span
@@ -45,7 +71,6 @@ export function HeroSection() {
           ))}
         </h1>
 
-        {/* Gold accent subtitle */}
         <motion.div
           initial={{ opacity: 0, scaleX: 0 }}
           animate={{ opacity: 1, scaleX: 1 }}
@@ -66,7 +91,7 @@ export function HeroSection() {
           Bespoke beauty treatments crafted for the modern woman. Hair, nails, makeup, spa &amp; home services — all under one roof.
         </motion.p>
 
-        {/* CTAs */}
+        {/* CTAs with shimmer */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -75,14 +100,20 @@ export function HeroSection() {
         >
           <Link
             href="/booking"
-            className="px-10 py-4 bg-rose-primary text-white font-sans text-sm tracking-widest uppercase hover:bg-rose-dark transition-all duration-300 hover:-translate-y-1 hover:shadow-luxury"
+            className="relative overflow-hidden px-10 py-4 bg-rose-primary text-white font-sans text-sm tracking-widest uppercase hover:bg-rose-dark transition-all duration-300 hover:-translate-y-1 hover:shadow-luxury group"
           >
+            <motion.span
+              className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"
+            />
             Book Your Experience
           </Link>
           <Link
             href="/services"
-            className="px-10 py-4 border border-warm-white/30 text-warm-white font-sans text-sm tracking-widest uppercase hover:bg-warm-white/10 transition-all duration-300"
+            className="relative overflow-hidden px-10 py-4 border border-warm-white/30 text-warm-white font-sans text-sm tracking-widest uppercase hover:bg-warm-white/10 transition-all duration-300 group"
           >
+            <motion.span
+              className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"
+            />
             Explore Services
           </Link>
         </motion.div>

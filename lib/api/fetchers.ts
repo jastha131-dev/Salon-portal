@@ -1,5 +1,6 @@
 import { client } from '@/lib/sanity/client'
 import {
+  plansQuery,
   servicesQuery,
   featuredServicesQuery,
   serviceBySlugQuery,
@@ -7,6 +8,7 @@ import {
   categoriesQuery,
   teamQuery,
   galleryQuery,
+  featuredGalleryQuery,
   reviewsQuery,
   featuredReviewsQuery,
   homepageContentQuery,
@@ -15,6 +17,7 @@ import {
   branchesQuery,
 } from '@/lib/sanity/queries'
 import type {
+  Plan,
   Service,
   Category,
   TeamMember,
@@ -35,6 +38,10 @@ async function safeFetch<T>(query: string, params?: Record<string, unknown>, fal
   }
 }
 
+export async function getPlans(): Promise<Plan[]> {
+  return safeFetch<Plan[]>(plansQuery, {}, [])
+}
+
 export async function getServices(categorySlug?: string): Promise<Service[]> {
   if (categorySlug && categorySlug !== 'all') {
     return safeFetch<Service[]>(servicesByCategory, { categorySlug }, [])
@@ -43,7 +50,9 @@ export async function getServices(categorySlug?: string): Promise<Service[]> {
 }
 
 export async function getFeaturedServices(): Promise<Service[]> {
-  return safeFetch<Service[]>(featuredServicesQuery, {}, [])
+  const featured = await safeFetch<Service[]>(featuredServicesQuery, {}, [])
+  if (featured.length > 0) return featured
+  return safeFetch<Service[]>(servicesQuery, {}, [])
 }
 
 export async function getServiceBySlug(slug: string): Promise<Service | null> {
@@ -60,6 +69,10 @@ export async function getTeam(): Promise<TeamMember[]> {
 
 export async function getGallery(): Promise<GalleryImage[]> {
   return safeFetch<GalleryImage[]>(galleryQuery, {}, [])
+}
+
+export async function getFeaturedGallery(): Promise<GalleryImage[]> {
+  return safeFetch<GalleryImage[]>(featuredGalleryQuery, {}, [])
 }
 
 export async function getReviews(options?: { featured?: boolean; limit?: number }): Promise<Review[]> {

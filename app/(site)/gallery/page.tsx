@@ -177,6 +177,8 @@ export default function GalleryPage() {
                             src={imageUrl}
                             alt={img.alt || `Gallery image ${i + 1}`}
                             fill
+                            unoptimized
+                            priority={i === 0}
                             className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
                             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                           />
@@ -311,9 +313,10 @@ export default function GalleryPage() {
                   src={urlFor(currentImage.image).width(1200).url()}
                   alt={currentImage.alt || `Gallery image ${lightboxIndex + 1}`}
                   fill
+                  unoptimized
+                  priority
                   className="object-contain"
                   sizes="(max-width: 1024px) 90vw, 900px"
-                  priority
                 />
               ) : (
                 <div

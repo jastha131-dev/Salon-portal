@@ -1,3 +1,9 @@
+export const plansQuery = `
+*[_type == "plan"] | order(order asc) {
+  _id, name, slug, tagline, monthlyPrice, yearlyPrice, highlight,
+  badge, popular, color, features, ctaText, ctaLink, order
+}`
+
 export const servicesQuery = `
 *[_type == "service"] | order(name asc) {
   _id, name, slug, price, discountPrice, duration, description, image, featured,
@@ -41,6 +47,12 @@ export const galleryQuery = `
   "category": category->{ _id, name, slug }
 }`
 
+export const featuredGalleryQuery = `
+*[_type == "galleryImage" && featured == true] | order(_createdAt desc) [0...6] {
+  _id, image, alt, caption, featured,
+  "category": category->{ _id, name, slug }
+}`
+
 export const reviewsQuery = `
 *[_type == "review"] | order(publishedAt desc) {
   _id, customerName, rating, comment, customerImage, featured, verified, publishedAt,
@@ -62,7 +74,8 @@ export const homepageContentQuery = `
 export const siteSettingsQuery = `
 *[_type == "siteSettings"][0] {
   salonName, tagline, address, phone, email, whatsappNumber,
-  googleMapsUrl, businessHours, socialLinks
+  googleMapsUrl, businessHours, socialLinks,
+  servicesHeroImage, aboutHeroImage, contactHeroImage
 }`
 
 export const staffQuery = `

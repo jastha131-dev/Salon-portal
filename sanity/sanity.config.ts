@@ -6,6 +6,7 @@ import { schemaTypes } from './schemaTypes'
 export default defineConfig({
   name: 'luxury-salon',
   title: 'Luxury Salon Studio',
+  basePath: '/studio',
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'your-project-id',
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
   plugins: [structureTool(), visionTool()],

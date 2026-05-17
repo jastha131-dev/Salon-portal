@@ -6,7 +6,7 @@ import { TestimonialsSection } from '@/components/sections/TestimonialsSection'
 import { GalleryPreviewSection } from '@/components/sections/GalleryPreviewSection'
 import { ReviewsSummarySection } from '@/components/sections/ReviewsSummarySection'
 import { BookingCTASection } from '@/components/sections/BookingCTASection'
-import { getFeaturedServices, getReviews, getReviewSummary, getGallery } from '@/lib/api/fetchers'
+import { getFeaturedServices, getReviews, getReviewSummary, getGallery, getHomepageContent } from '@/lib/api/fetchers'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -17,19 +17,20 @@ export const metadata: Metadata = {
 export const revalidate = 3600
 
 export default async function HomePage() {
-  const [featuredServices, featuredReviews, reviewSummary, galleryImages] = await Promise.all([
+  const [featuredServices, featuredReviews, reviewSummary, galleryImages, homepageContent] = await Promise.all([
     getFeaturedServices(),
     getReviews({ featured: true }),
     getReviewSummary(),
     getGallery(),
+    getHomepageContent(),
   ])
 
   return (
     <>
-      <HeroSection />
+      <HeroSection heroImage={homepageContent?.heroImage ?? null} />
       <FeaturedServicesSection services={featuredServices} />
       <CategoriesSection />
-      <AboutTeaserSection />
+      <AboutTeaserSection image={homepageContent?.aboutTeaserImage ?? null} />
       <TestimonialsSection reviews={featuredReviews} />
       <GalleryPreviewSection images={galleryImages} />
       <ReviewsSummarySection reviews={featuredReviews} summary={reviewSummary} />

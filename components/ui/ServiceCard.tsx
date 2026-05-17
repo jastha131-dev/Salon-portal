@@ -32,7 +32,7 @@ export function ServiceCard({
         <div className="relative h-52 overflow-hidden">
           <Image
             src={imageUrl}
-            alt={service.name}
+            alt={service.image?.alt || service.name || ''}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

@@ -1,3 +1,4 @@
+import { planSchema } from './plan'
 import { categorySchema } from './category'
 import { serviceSchema } from './service'
 import { teamMemberSchema } from './teamMember'
@@ -9,6 +10,7 @@ import { bookingSchema } from './booking'
 import { branchSchema } from './branch'
 
 export const schemaTypes = [
+  planSchema,
   categorySchema,
   serviceSchema,
   teamMemberSchema,

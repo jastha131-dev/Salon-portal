@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node seedSanity.js)",
+      "Bash(python -c ' *)",
+      "Bash(node cleanDuplicates.js)",
+      "Bash(npx tsc *)"
+    ]
+  }
+}

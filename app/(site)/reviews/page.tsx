@@ -1,347 +1,419 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { PageHero } from '@/components/layout/PageHero'
 import { FadeIn } from '@/components/animations/FadeIn'
-import { StaggerContainer, StaggerItem } from '@/components/animations/StaggerContainer'
-import { ReviewCard } from '@/components/ui/ReviewCard'
 import { StarRating } from '@/components/ui/StarRating'
-import { SectionHeader } from '@/components/ui/SectionHeader'
 import { getReviews, getReviewSummary } from '@/lib/api/fetchers'
+import { RatingBars } from './RatingBars'
+import { ReviewsMarquee } from './ReviewsClient'
+import { CheckCircle, Star, Shield, Award, ArrowUpRight } from 'lucide-react'
+import { format } from 'date-fns'
 import type { Review, ReviewSummary } from '@/types'
 
 export const metadata: Metadata = {
   title: 'Client Reviews | Lumière Salon Dubai',
-  description:
-    'Read verified client reviews for Lumière Salon Dubai — real experiences from real clients across hair, nails, makeup, and spa treatments.',
-  openGraph: {
-    title: 'Client Reviews | Lumière Salon Dubai',
-    description:
-      'See why Lumière is Dubai\'s most loved luxury beauty salon, with a 4.9-star average from hundreds of verified clients.',
-    type: 'website',
-  },
+  description: 'Read verified client reviews for Lumière Salon Dubai — real experiences from real clients.',
 }
-
 export const revalidate = 3600
 
-// ── Fallback data ─────────────────────────────────────────────────────────────
-
 const fallbackReviews: Review[] = [
-  {
-    _id: '1',
-    customerName: 'Sarah Al Mansouri',
-    rating: 5,
-    comment:
-      'The best salon experience I have ever had. The team is incredibly talented and the atmosphere is pure luxury. My hair transformation was beyond expectations!',
-    featured: true,
-    verified: true,
-    publishedAt: '2024-03-15',
-  },
-  {
-    _id: '2',
-    customerName: 'Fatima Hassan',
-    rating: 5,
-    comment:
-      'Been coming here for 3 years. They are consistent, professional, and genuinely care about your satisfaction. The nail art is always perfection.',
-    featured: true,
-    verified: true,
-    publishedAt: '2024-02-28',
-  },
-  {
-    _id: '3',
-    customerName: 'Priya Sharma',
-    rating: 5,
-    comment:
-      'Booked the bridal package and I am so happy I did. My wedding look was absolutely stunning — I felt like a queen. Thank you Lumière team!',
-    featured: true,
-    verified: true,
-    publishedAt: '2024-02-10',
-  },
-  {
-    _id: '4',
-    customerName: 'Emma Williams',
-    rating: 5,
-    comment:
-      'The home service is a game-changer! They came fully equipped and professional. Perfect for busy days when you cannot leave the house.',
-    featured: true,
-    verified: true,
-    publishedAt: '2024-01-20',
-  },
-  {
-    _id: '5',
-    customerName: 'Layla Al Rashid',
-    rating: 4,
-    comment:
-      'Always leave feeling pampered and beautiful. The facial treatment is absolutely divine. Highly recommend the deep cleansing option.',
-    featured: false,
-    verified: true,
-    publishedAt: '2024-01-05',
-  },
-  {
-    _id: '6',
-    customerName: 'Sophie Martin',
-    rating: 5,
-    comment:
-      'Discovered Lumière through a friend and now I am a regular. The staff knows your preferences without you having to repeat yourself. Love this place!',
-    featured: false,
-    verified: true,
-    publishedAt: '2023-12-15',
-  },
-  {
-    _id: '7',
-    customerName: 'Aisha Mohammed',
-    rating: 5,
-    comment:
-      'The henna and nail art combo I got for Eid was absolutely breathtaking. Every guest at the party complimented my look. Lumière never disappoints.',
-    featured: false,
-    verified: true,
-    publishedAt: '2023-12-01',
-  },
-  {
-    _id: '8',
-    customerName: 'Natalia Ivanova',
-    rating: 5,
-    comment:
-      'I drove 40 minutes from Abu Dhabi just for my hair appointment here. Completely worth it — the colour correction they did was flawless. Booked my next visit already.',
-    featured: false,
-    verified: true,
-    publishedAt: '2023-11-18',
-  },
-  {
-    _id: '9',
-    customerName: 'Rania Khalil',
-    rating: 4,
-    comment:
-      'The spa package is a full retreat. I spent three hours there and left feeling completely renewed. The hot stone massage is a must-try.',
-    featured: false,
-    verified: true,
-    publishedAt: '2023-11-05',
-  },
+  { _id:'1', customerName:'Sarah Al Mansouri', rating:5, comment:'The best salon experience I have ever had. The team is incredibly talented and the atmosphere is pure luxury. My hair transformation was beyond all expectations!', featured:true,  verified:true, publishedAt:'2024-03-15' },
+  { _id:'2', customerName:'Fatima Hassan',      rating:5, comment:'Been coming here for 3 years. Consistent, professional, and they genuinely care about your satisfaction. The nail art is always perfection.',              featured:true,  verified:true, publishedAt:'2024-02-28' },
+  { _id:'3', customerName:'Priya Sharma',       rating:5, comment:'Booked the bridal package and I am so happy I did. My wedding look was absolutely stunning — I felt like a queen. Thank you Lumière!',                   featured:true,  verified:true, publishedAt:'2024-02-10' },
+  { _id:'4', customerName:'Emma Williams',      rating:5, comment:'The home service is a game-changer! They came fully equipped and professional. Perfect for busy days when you cannot leave the house.',                    featured:false, verified:true, publishedAt:'2024-01-20' },
+  { _id:'5', customerName:'Layla Al Rashid',    rating:4, comment:'Always leave feeling pampered and beautiful. The facial treatment is absolutely divine. Highly recommend the deep cleansing option.',                       featured:false, verified:true, publishedAt:'2024-01-05' },
+  { _id:'6', customerName:'Sophie Martin',      rating:5, comment:'Discovered Lumière through a friend and now I am a regular. The staff knows your preferences without you having to repeat yourself.',                       featured:false, verified:true, publishedAt:'2023-12-15' },
+  { _id:'7', customerName:'Aisha Mohammed',     rating:5, comment:'The henna and nail art combo for Eid was breathtaking. Every guest at the party complimented my look. Lumière never disappoints.',                         featured:false, verified:true, publishedAt:'2023-12-01' },
+  { _id:'8', customerName:'Natalia Ivanova',    rating:5, comment:'I drove 40 minutes from Abu Dhabi for my hair appointment. Completely worth it — the colour correction was flawless. Booked my next visit already.',          featured:false, verified:true, publishedAt:'2023-11-18' },
+  { _id:'9', customerName:'Rania Khalil',       rating:4, comment:'The spa package is a full retreat. I spent three hours and left feeling completely renewed. The hot stone massage is a must-try.',                          featured:false, verified:true, publishedAt:'2023-11-05' },
+]
+const fallbackSummary: ReviewSummary = { averageRating:4.9, totalCount:247, distribution:{ 5:210, 4:25, 3:8, 2:3, 1:1 } }
+
+const avatarGradients = [
+  'from-rose-dark to-rose-primary',
+  'from-[#3A4A6B] to-[#5A7AC9]',
+  'from-[#3D5A3A] to-[#5A8A4A]',
+  'from-[#6B5A3A] to-[#C9A85A]',
+  'from-[#5A3A6B] to-[#A85AC9]',
+  'from-[#2A5A6B] to-[#5AC9C0]',
+  'from-rose-primary to-rose-light',
+  'from-[#4A3A6B] to-[#8A5AC9]',
+  'from-[#6B3A4A] to-rose-primary',
 ]
 
-const fallbackSummary: ReviewSummary = {
-  averageRating: 4.9,
-  totalCount: 247,
-  distribution: { 5: 210, 4: 25, 3: 8, 2: 3, 1: 1 },
+function initials(name: string | null | undefined) {
+  if (!name) return '?'
+  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 }
 
-// ── Stat highlights ──────────────────────────────────────────────────────────
-
-const highlights = [
-  { value: '4.9', label: 'Average Rating', sub: 'across all platforms' },
-  { value: '247+', label: 'Verified Reviews', sub: 'and growing every week' },
-  { value: '98%', label: 'Would Return', sub: 'based on client surveys' },
-  { value: '5★', label: 'Google Rating', sub: 'Dubai Marina location' },
-]
-
-// ── Page ─────────────────────────────────────────────────────────────────────
-
 export default async function ReviewsPage() {
-  let reviews: Review[] = []
+  let reviews: Review[]   = []
   let summary: ReviewSummary = fallbackSummary
-
-  try {
-    ;[reviews, summary] = await Promise.all([getReviews(), getReviewSummary()])
-  } catch {
-    /* silently fall back */
-  }
+  try { ;[reviews, summary] = await Promise.all([getReviews(), getReviewSummary()]) } catch { /* fallback */ }
 
   const displayReviews = reviews.length > 0 ? reviews : fallbackReviews
   const displaySummary = summary.totalCount > 0 ? summary : fallbackSummary
-
-  const maxDistribution = Math.max(...Object.values(displaySummary.distribution))
+  const featured       = displayReviews.filter(r => r.featured).slice(0, 3)
+  const allReviews     = displayReviews
 
   return (
     <>
-      <PageHero
-        eyebrow="Client Voices"
-        title="What Our Clients Say"
-        subtitle="Real reviews from real clients — see why Lumière is Dubai's most loved luxury beauty salon."
-        dark
-      />
+      {/* ── HERO ─────────────────────────────────────────────────────── */}
+      <section className="relative min-h-[85vh] flex flex-col justify-center pt-32 pb-0 bg-[#08080f] overflow-hidden">
 
-      {/* ── Highlight stats strip ────────────────────────── */}
-      <section className="bg-rose-primary py-10">
-        <div className="container-luxury">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/20">
-            {highlights.map((h) => (
-              <div key={h.label} className="bg-rose-primary px-8 py-6 text-center">
-                <p className="font-playfair text-4xl font-medium text-white mb-1">{h.value}</p>
-                <p className="font-sans text-sm font-medium text-white mb-0.5">{h.label}</p>
-                <p className="font-sans text-xs text-white/70">{h.sub}</p>
-              </div>
-            ))}
-          </div>
+        {/* Giant ghost rating */}
+        <span
+          aria-hidden="true"
+          className="absolute right-[-5%] top-1/2 -translate-y-1/2 font-playfair font-bold leading-none select-none pointer-events-none text-warm-white/[0.028] text-ghost-hero"
+        >
+          4.9
+        </span>
+
+        {/* Atmospheric glows */}
+        <div className="absolute top-1/4 left-0 w-[500px] h-[500px] rounded-full bg-rose-primary/5 blur-[140px] pointer-events-none" />
+        <div className="absolute bottom-0 right-1/3 w-80 h-80 rounded-full bg-gold-accent/5 blur-[100px] pointer-events-none" />
+
+        {/* Column lines */}
+        <div className="absolute inset-0 pointer-events-none flex" aria-hidden="true">
+          {[1,2,3,4].map(i => <div key={i} className="flex-1 border-r border-warm-white/[0.025]" />)}
         </div>
-      </section>
 
-      {/* ── Rating Summary ──────────────────────────────── */}
-      <section className="py-16 md:py-24 bg-warm-white">
-        <div className="container-luxury max-w-4xl">
+        <div className="container-luxury relative flex-1 flex flex-col justify-center">
           <FadeIn>
-            <div className="flex flex-col md:flex-row items-center gap-10 md:gap-16 p-10 md:p-16 bg-cream-bg shadow-card">
+            <p className="font-cormorant italic text-rose-light text-xl md:text-2xl tracking-[0.3em] mb-7">
+              Client Voices
+            </p>
+            <h1 className="font-playfair font-medium text-warm-white leading-[0.88] mb-8 text-fluid-h1">
+              Real Stories,<br />
+              <em className="not-italic gold-shimmer">Real Results</em>
+            </h1>
+            <div className="h-px w-20 bg-linear-to-r from-gold-accent to-transparent mb-8 opacity-80" />
+            <p className="font-sans text-muted-light text-lg max-w-lg leading-relaxed mb-16">
+              Over <span className="text-warm-white font-medium">{displaySummary.totalCount}+</span> verified reviews from real clients — see why Lumière is Dubai&apos;s most loved luxury beauty salon.
+            </p>
+          </FadeIn>
 
-              {/* Big score */}
-              <div className="text-center flex-shrink-0">
-                <p className="font-playfair text-[6rem] font-medium text-charcoal leading-none tracking-tight">
-                  {displaySummary.averageRating.toFixed(1)}
-                </p>
-                <div className="flex justify-center mt-2 mb-3">
-                  <StarRating rating={displaySummary.averageRating} size="lg" />
+          {/* Stats strip */}
+          <FadeIn delay={0.18}>
+            <div className="grid grid-cols-2 md:grid-cols-4 border-t border-warm-white/8">
+              {[
+                { n: `${displaySummary.averageRating.toFixed(1)}★`, l: 'Avg Rating'      },
+                { n: `${displaySummary.totalCount}+`,               l: 'Verified Reviews' },
+                { n: '98%',                                          l: 'Would Return'     },
+                { n: '#1',                                           l: 'Dubai Marina'     },
+              ].map((s, i) => (
+                <div key={s.l} className={`py-8 px-6 text-center border-r border-warm-white/8 ${i === 3 ? 'border-r-0' : ''}`}>
+                  <p className="font-playfair text-3xl md:text-4xl text-warm-white mb-1">{s.n}</p>
+                  <p className="font-sans text-[10px] tracking-[0.2em] uppercase text-muted-light">{s.l}</p>
                 </div>
-                <p className="font-sans text-sm text-muted">
-                  Based on{' '}
-                  <span className="font-medium text-charcoal">
-                    {displaySummary.totalCount.toLocaleString()}
-                  </span>{' '}
-                  reviews
-                </p>
-              </div>
-
-              {/* Divider */}
-              <div className="h-px w-full md:h-28 md:w-px bg-charcoal/10 flex-shrink-0" />
-
-              {/* Distribution bars */}
-              <div className="space-y-3 w-full">
-                {[5, 4, 3, 2, 1].map((star) => {
-                  const count = displaySummary.distribution?.[star] ?? 0
-                  const pct =
-                    displaySummary.totalCount > 0
-                      ? (count / displaySummary.totalCount) * 100
-                      : 0
-
-                  return (
-                    <div key={star} className="flex items-center gap-3">
-                      <span className="font-sans text-sm text-charcoal w-3 flex-shrink-0">{star}</span>
-                      <div className="flex-shrink-0">
-                        <StarRating rating={star} size="sm" />
-                      </div>
-                      <div className="flex-1 h-2 bg-charcoal/8 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all duration-1000 ${
-                            star === 5
-                              ? 'bg-gold-accent'
-                              : star === 4
-                              ? 'bg-gold-light'
-                              : 'bg-charcoal/20'
-                          }`}
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                      <span className="font-sans text-xs text-muted w-10 text-right flex-shrink-0">
-                        {pct.toFixed(0)}%
-                      </span>
-                    </div>
-                  )
-                })}
-              </div>
-
+              ))}
             </div>
           </FadeIn>
         </div>
       </section>
 
-      {/* ── Reviews Grid ────────────────────────────────── */}
-      <section className="py-16 md:py-24 bg-cream-bg">
+      {/* ── MARQUEE ──────────────────────────────────────────────────── */}
+      <ReviewsMarquee />
+
+      {/* ── RATING BREAKDOWN ─────────────────────────────────────────── */}
+      <section className="py-20 md:py-28 bg-[#0e0e1c]">
         <div className="container-luxury">
-          <SectionHeader
-            eyebrow="All Reviews"
-            title={`${displayReviews.length} Client Experiences`}
-            subtitle="Every review is from a verified Lumière client. Authentic voices, real transformations."
-          />
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
 
-          <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayReviews.map((review) => (
-              <StaggerItem key={review._id}>
-                <ReviewCard review={review} />
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
-
-          {/* Load more hint */}
-          {displayReviews.length >= 9 && (
-            <FadeIn>
-              <div className="text-center mt-12">
-                <p className="font-sans text-sm text-muted">
-                  Showing {displayReviews.length} of {displaySummary.totalCount.toLocaleString()} reviews
+            {/* Left: dramatic score */}
+            <FadeIn direction="left">
+              <div>
+                <p className="font-cormorant italic text-rose-light text-xl tracking-widest mb-8">Overall Score</p>
+                <div className="flex items-end gap-6 mb-6">
+                  <span className="text-fluid-rating font-playfair font-medium leading-none gold-shimmer">
+                    {displaySummary.averageRating.toFixed(1)}
+                  </span>
+                  <div className="pb-4 flex flex-col gap-2">
+                    <StarRating rating={displaySummary.averageRating} size="lg" animated />
+                    <p className="font-sans text-xs text-muted-light tracking-widest uppercase">out of 5.0</p>
+                  </div>
+                </div>
+                <p className="font-sans text-muted-light mb-10">
+                  Based on <span className="text-warm-white font-medium">{displaySummary.totalCount.toLocaleString()}</span> client reviews
                 </p>
+
+                {/* Platform badges */}
+                <div className="flex flex-wrap gap-3">
+                  {[
+                    { name: 'Google',    score: '4.9', color: 'border-[#4285F4]/30 hover:border-[#4285F4]/60' },
+                    { name: 'Facebook',  score: '4.9', color: 'border-[#1877F2]/30 hover:border-[#1877F2]/60' },
+                    { name: 'Instagram', score: '4.9', color: 'border-rose-primary/30 hover:border-rose-primary/60' },
+                  ].map(p => (
+                    <div key={p.name} className={`flex items-center gap-3 border px-5 py-3 transition-colors duration-300 ${p.color}`}>
+                      <Star className="w-3.5 h-3.5 text-gold-accent fill-gold-accent" />
+                      <span className="font-sans text-xs tracking-widest text-muted-light uppercase">{p.name}</span>
+                      <span className="font-playfair text-lg text-warm-white">{p.score}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
+            </FadeIn>
+
+            {/* Right: animated bars */}
+            <FadeIn direction="right" delay={0.15}>
+              <div className="bg-[#16162a] border border-warm-white/6 p-10">
+                <div className="absolute top-0 right-0 w-16 h-16 border-t border-r border-gold-accent/20 pointer-events-none" />
+                <p className="font-sans text-[10px] tracking-[0.25em] uppercase text-muted-light mb-8">Rating Breakdown</p>
+                <RatingBars distribution={displaySummary.distribution} total={displaySummary.totalCount} />
+                <div className="mt-10 pt-8 border-t border-warm-white/8 flex items-center gap-3">
+                  <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <p className="font-sans text-sm text-muted-light">All reviews verified after completed appointments</p>
+                </div>
+              </div>
+            </FadeIn>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ── FEATURED — editorial pull-quote rows ─────────────────────── */}
+      {featured.length > 0 && (
+        <section className="py-20 md:py-28 bg-[#08080f]">
+          <div className="container-luxury">
+            <FadeIn>
+              <div className="flex items-end gap-6 mb-16 flex-wrap">
+                <div>
+                  <p className="font-cormorant italic text-rose-light text-xl tracking-widest mb-2">Featured</p>
+                  <h2 className="font-playfair text-4xl md:text-5xl text-warm-white font-medium">Words That Inspire Us</h2>
+                </div>
+                <div className="h-px flex-1 min-w-16 bg-linear-to-r from-warm-white/8 to-transparent hidden sm:block" />
+              </div>
+            </FadeIn>
+
+            {/* Editorial layout: large first + 2 smaller */}
+            <div className="space-y-px">
+              {featured.map((r, i) => (
+                <FadeIn key={r._id} delay={i * 0.1}>
+                  <div className="group relative bg-[#16162a] border border-warm-white/6 hover:border-gold-accent/25 overflow-hidden transition-all duration-500">
+                    <div className="absolute inset-0 bg-rose-primary/0 group-hover:bg-rose-primary/[0.04] transition-colors duration-500" />
+
+                    {/* Gold top accent line */}
+                    <div className="h-px w-0 group-hover:w-full bg-linear-to-r from-gold-accent via-gold-light to-transparent transition-all duration-700 ease-out" />
+
+                    <div className="relative p-8 md:p-12 lg:p-16 grid md:grid-cols-[auto_1fr] gap-8 md:gap-16 items-start">
+                      {/* Number */}
+                      <div className="shrink-0">
+                        <span className={`font-playfair font-medium text-warm-white/[0.06] group-hover:text-warm-white/[0.12] transition-colors duration-400 leading-none select-none ${i === 0 ? 'text-[7rem]' : 'text-[5rem]'}`}>
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                      </div>
+
+                      {/* Content */}
+                      <div>
+                        <StarRating rating={r.rating} size="sm" className="mb-6" />
+                        <blockquote className={`font-cormorant italic text-warm-white leading-snug mb-8 ${i === 0 ? 'text-3xl md:text-4xl' : 'text-2xl md:text-3xl'}`}>
+                          &ldquo;{r.comment}&rdquo;
+                        </blockquote>
+                        <div className="flex items-center gap-6">
+                          <div className="w-10 h-px bg-gold-accent/50" />
+                          <p className="font-playfair text-lg text-warm-white">{r.customerName}</p>
+                          {r.verified && (
+                            <span className="font-sans text-[10px] tracking-widest uppercase text-emerald-400">✓ Verified</span>
+                          )}
+                          {r.publishedAt && (
+                            <span className="font-sans text-xs text-muted-light ml-auto">
+                              {format(new Date(r.publishedAt), 'MMM yyyy')}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </FadeIn>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── ALL REVIEWS — staggered mosaic ───────────────────────────── */}
+      <section className="py-20 md:py-28 bg-charcoal">
+        <div className="container-luxury">
+          <FadeIn>
+            <div className="flex items-end justify-between mb-14 flex-wrap gap-4">
+              <div>
+                <p className="font-cormorant italic text-rose-light text-xl tracking-widest mb-2">All Reviews</p>
+                <h2 className="font-playfair text-4xl md:text-5xl text-warm-white font-medium">
+                  {allReviews.length} Client Experiences
+                </h2>
+              </div>
+              <div className="h-px flex-1 min-w-16 bg-linear-to-r from-transparent to-warm-white/8 hidden md:block" />
+            </div>
+          </FadeIn>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {allReviews.map((r, i) => (
+              <FadeIn key={r._id} delay={(i % 3) * 0.07}>
+                <div className="group relative bg-[#08080f] border border-warm-white/6 hover:border-rose-primary/30 transition-all duration-400 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col h-full">
+
+                  {/* Gold top line expands on hover */}
+                  <div className="h-px w-0 group-hover:w-full bg-linear-to-r from-rose-primary to-gold-accent transition-all duration-600 ease-out" />
+
+                  <div className="p-7 flex flex-col flex-1">
+                    {/* Header row */}
+                    <div className="flex items-center gap-4 mb-5">
+                      {/* Gradient avatar */}
+                      <div className={`w-11 h-11 rounded-full bg-linear-to-br ${avatarGradients[i % avatarGradients.length]} flex items-center justify-center shrink-0 shadow-sm`}>
+                        <span className="font-playfair text-sm font-medium text-white">{initials(r.customerName)}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-playfair text-warm-white truncate">{r.customerName}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {r.verified && <span className="font-sans text-[9px] text-emerald-400 tracking-widest">✓ Verified</span>}
+                          {r.publishedAt && (
+                            <span className="font-sans text-[9px] text-muted-light tracking-widest">
+                              {format(new Date(r.publishedAt), 'MMM yyyy')}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <span className="font-sans text-[9px] tracking-[0.2em] text-muted-light/40 shrink-0">
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                    </div>
+
+                    {/* Stars */}
+                    <StarRating rating={r.rating} size="sm" className="mb-4" />
+
+                    {/* Quote in Cormorant italic */}
+                    <blockquote className="font-cormorant italic text-warm-white/75 text-lg leading-relaxed flex-1 line-clamp-3">
+                      &ldquo;{r.comment}&rdquo;
+                    </blockquote>
+
+                    {/* Bottom gold line */}
+                    <div className="mt-5 pt-5 border-t border-warm-white/6 flex items-center justify-between">
+                      <div className="h-px w-6 bg-gold-accent/40 group-hover:w-14 transition-all duration-500" />
+                      <StarRating rating={r.rating} size="sm" showValue className="opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    </div>
+                  </div>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+
+          {allReviews.length >= 9 && (
+            <FadeIn delay={0.2}>
+              <p className="text-center font-sans text-xs text-muted-light mt-14 tracking-widest">
+                Showing {allReviews.length} of {displaySummary.totalCount.toLocaleString()} verified reviews
+              </p>
             </FadeIn>
           )}
         </div>
       </section>
 
-      {/* ── Trust badges ────────────────────────────────── */}
-      <section className="py-16 bg-charcoal">
+      {/* ── TRUST — editorial numbered rows ──────────────────────────── */}
+      <section className="py-20 md:py-24 bg-[#08080f]">
         <div className="container-luxury">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            <FadeIn delay={0}>
-              <div className="p-8 border border-warm-white/8 hover:border-rose-primary/40 transition-colors duration-300">
-                <div className="w-14 h-14 mx-auto mb-4 border border-gold-accent/40 flex items-center justify-center">
-                  <span className="font-playfair text-gold-accent text-2xl">✓</span>
-                </div>
-                <h3 className="font-playfair text-lg text-warm-white mb-2">100% Verified</h3>
-                <p className="font-sans text-sm text-muted-light leading-relaxed">
-                  All reviews are submitted by real clients after completed appointments.
-                </p>
-              </div>
-            </FadeIn>
-            <FadeIn delay={0.1}>
-              <div className="p-8 border border-warm-white/8 hover:border-rose-primary/40 transition-colors duration-300">
-                <div className="w-14 h-14 mx-auto mb-4 border border-gold-accent/40 flex items-center justify-center">
-                  <span className="font-playfair text-gold-accent text-2xl">★</span>
-                </div>
-                <h3 className="font-playfair text-lg text-warm-white mb-2">Top Rated in Dubai</h3>
-                <p className="font-sans text-sm text-muted-light leading-relaxed">
-                  Recognised across Google, Facebook, and local beauty directories.
-                </p>
-              </div>
-            </FadeIn>
-            <FadeIn delay={0.2}>
-              <div className="p-8 border border-warm-white/8 hover:border-rose-primary/40 transition-colors duration-300">
-                <div className="w-14 h-14 mx-auto mb-4 border border-gold-accent/40 flex items-center justify-center">
-                  <span className="font-playfair text-gold-accent text-2xl">♥</span>
-                </div>
-                <h3 className="font-playfair text-lg text-warm-white mb-2">98% Satisfaction</h3>
-                <p className="font-sans text-sm text-muted-light leading-relaxed">
-                  An overwhelming majority of clients return within 60 days of their visit.
-                </p>
-              </div>
-            </FadeIn>
+          <FadeIn>
+            <div className="mb-14">
+              <p className="font-cormorant italic text-rose-light text-xl tracking-widest mb-3">Why Trust Us</p>
+              <h2 className="font-playfair text-4xl md:text-5xl text-warm-white font-medium">Our Commitment</h2>
+            </div>
+          </FadeIn>
+
+          <div className="space-y-px">
+            {[
+              {
+                n: '01', Icon: Shield,   color: 'text-emerald-400',
+                title: '100% Verified Reviews',
+                desc:  'Every review is linked to a confirmed appointment booking — zero fake reviews, ever.',
+                fill:  'bg-emerald-900/60',
+              },
+              {
+                n: '02', Icon: Award,    color: 'text-gold-accent',
+                title: 'Top Rated in Dubai',
+                desc:  'Consistently recognised across Google, Facebook, and the Dubai Beauty Awards directory.',
+                fill:  'bg-[#1a1200]',
+              },
+              {
+                n: '03', Icon: CheckCircle, color: 'text-rose-light',
+                title: '98% Client Satisfaction',
+                desc:  'An overwhelming majority of clients return within 60 days of their first visit.',
+                fill:  'bg-rose-dark/50',
+              },
+            ].map((item, i) => {
+              const Icon = item.Icon
+              return (
+                <FadeIn key={item.n} delay={i * 0.1}>
+                  <div className="group relative bg-[#16162a] overflow-hidden flex items-center gap-8 md:gap-16 p-8 md:p-12 border border-warm-white/6 hover:border-warm-white/10 transition-all duration-400">
+                    <div className={`absolute inset-0 ${item.fill} translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out`} />
+                    <span className="relative font-playfair font-medium text-warm-white/[0.05] group-hover:text-warm-white/[0.12] transition-colors duration-400 shrink-0 select-none leading-none text-fluid-h1">
+                      {item.n}
+                    </span>
+                    <div className="relative flex-1">
+                      <div className="flex items-center gap-4 mb-3">
+                        <Icon className={`w-5 h-5 ${item.color} group-hover:text-warm-white transition-colors duration-300`} />
+                        <h3 className="font-playfair text-2xl text-warm-white">{item.title}</h3>
+                      </div>
+                      <p className="font-sans text-sm text-muted-light group-hover:text-warm-white/75 leading-relaxed transition-colors duration-300 max-w-xl">
+                        {item.desc}
+                      </p>
+                    </div>
+                  </div>
+                </FadeIn>
+              )
+            })}
           </div>
         </div>
       </section>
 
-      {/* ── Write review CTA ────────────────────────────── */}
-      <section className="py-16 md:py-24 bg-warm-white text-center">
-        <div className="container-luxury max-w-2xl">
+      {/* ── CTA — split layout ────────────────────────────────────────── */}
+      <section className="grid lg:grid-cols-2 min-h-[440px]">
+
+        {/* Left: dark — leave a review */}
+        <div className="relative bg-[#08080f] py-20 px-10 md:px-16 xl:px-20 flex flex-col justify-center overflow-hidden border-r border-warm-white/6">
+          <div className="absolute inset-0 pointer-events-none flex" aria-hidden="true">
+            {[1,2,3].map(i => <div key={i} className="flex-1 border-r border-warm-white/[0.025]" />)}
+          </div>
+          <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-gold-accent/30 to-transparent" />
           <FadeIn>
-            <p className="font-cormorant italic text-rose-primary text-xl tracking-widest mb-3">
-              Share Your Experience
-            </p>
-            <h2 className="font-playfair text-3xl md:text-4xl text-charcoal font-medium mb-4">
-              Had a Visit Recently?
+            <p className="font-cormorant italic text-rose-light text-xl tracking-widest mb-5">Share Your Experience</p>
+            <h2 className="font-playfair text-4xl md:text-5xl text-warm-white font-medium mb-6 leading-tight">
+              Had a Visit<br />Recently?
             </h2>
-            <div className="divider-gold w-16 mx-auto mb-6" />
-            <p className="font-sans text-muted mb-8 leading-relaxed">
-              We love hearing from our clients. Book an appointment, experience the Lumière
-              difference, and share your story — your words help other guests discover us.
+            <div className="h-px w-16 bg-linear-to-r from-gold-accent to-transparent mb-8 opacity-70" />
+            <p className="font-sans text-muted-light leading-relaxed mb-10 max-w-sm">
+              We love hearing from our clients. Your honest review helps other women in Dubai find their beauty home.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/booking"
-                className="inline-flex px-10 py-4 bg-rose-primary text-white font-sans text-sm tracking-widest uppercase hover:bg-rose-dark transition-colors duration-300"
-              >
-                Book an Appointment
-              </Link>
-              <a
-                href="https://g.page/lumieresalon-dubai/review"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex px-10 py-4 border border-charcoal/20 text-charcoal font-sans text-sm tracking-widest uppercase hover:border-rose-primary hover:text-rose-primary transition-colors duration-300"
-              >
-                Leave a Google Review
-              </a>
-            </div>
+            <a
+              href="https://g.page/lumieresalon-dubai/review"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 border border-warm-white/20 text-warm-white font-sans text-xs tracking-widest uppercase px-8 py-4 hover:border-gold-accent hover:text-gold-accent transition-all duration-300 hover:-translate-y-0.5 self-start"
+            >
+              <Star className="w-4 h-4" />
+              Leave a Google Review
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </a>
+          </FadeIn>
+        </div>
+
+        {/* Right: rose — book now */}
+        <div className="relative bg-rose-primary py-20 px-10 md:px-16 xl:px-20 flex flex-col justify-center overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none flex" aria-hidden="true">
+            {[1,2,3].map(i => <div key={i} className="flex-1 border-r border-white/8" />)}
+          </div>
+          <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full bg-white/5 blur-3xl pointer-events-none" />
+          <FadeIn delay={0.1}>
+            <p className="font-cormorant italic text-warm-white/70 text-xl tracking-widest mb-5">Ready for Your Moment?</p>
+            <h2 className="font-playfair text-4xl md:text-5xl text-warm-white font-medium mb-6 leading-tight">
+              Book Your<br />Appointment
+            </h2>
+            <div className="h-px w-16 bg-white/30 mb-8" />
+            <p className="font-sans text-warm-white/80 leading-relaxed mb-10 max-w-sm">
+              Experience the Lumière difference for yourself — then share your story with the world.
+            </p>
+            <Link
+              href="/booking"
+              className="inline-flex items-center gap-3 bg-charcoal text-warm-white font-sans text-xs tracking-widest uppercase px-10 py-4 hover:bg-rose-dark transition-all duration-300 hover:-translate-y-0.5 shadow-luxury self-start"
+            >
+              Book Now
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </Link>
           </FadeIn>
         </div>
       </section>

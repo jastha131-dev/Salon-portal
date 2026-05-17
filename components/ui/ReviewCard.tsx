@@ -1,7 +1,5 @@
-import Image from 'next/image'
 import { CheckCircle2, Quote } from 'lucide-react'
 import { StarRating } from './StarRating'
-import { Badge } from './Badge'
 import { urlFor } from '@/lib/sanity/image'
 import type { Review } from '@/types'
 import { format } from 'date-fns'
@@ -16,7 +14,7 @@ export function ReviewCard({ review, compact = false }: ReviewCardProps) {
     ? urlFor(review.customerImage).width(80).height(80).url()
     : null
 
-  const initials = review.customerName
+  const initials = (review.customerName ?? '')
     .split(' ')
     .map((n) => n[0])
     .join('')
@@ -24,56 +22,31 @@ export function ReviewCard({ review, compact = false }: ReviewCardProps) {
     .slice(0, 2)
 
   return (
-    <div
-      className={`bg-[#FFFCF9] relative ${compact ? 'p-6' : 'p-8'}`}
-    >
-      {/* Decorative quote mark */}
-      <Quote
-        className="absolute top-4 right-4 w-8 h-8 text-[#F2A7B8]/50"
-        aria-hidden="true"
-      />
+    <div className={`relative border border-warm-white/8 hover:border-rose-primary/30 transition-all duration-300 hover:-translate-y-1 ${compact ? 'p-6' : 'p-7'} bg-[#16162a]`}>
+      <Quote className="absolute top-5 right-5 w-7 h-7 text-rose-primary/20" aria-hidden="true" />
 
-      {/* Header: avatar + name + rating */}
-      <div className="flex items-start gap-4 mb-4">
+      {/* Header */}
+      <div className="flex items-start gap-3 mb-5">
         {avatarUrl ? (
-          <Image
-            src={avatarUrl}
-            alt={review.customerName}
-            width={48}
-            height={48}
-            className="rounded-full object-cover flex-shrink-0"
-          />
+          <img src={avatarUrl} alt={review.customerName} className="w-11 h-11 rounded-full object-cover shrink-0" />
         ) : (
-          <div className="w-12 h-12 rounded-full bg-[#F2A7B8]/20 flex items-center justify-center flex-shrink-0">
-            <span
-              className="text-[#C9687A] font-medium"
-              style={{ fontFamily: 'var(--font-playfair)' }}
-            >
-              {initials}
-            </span>
+          <div className="w-11 h-11 rounded-full bg-rose-primary/20 border border-rose-primary/30 flex items-center justify-center shrink-0">
+            <span className="font-playfair text-rose-light text-sm font-medium">{initials}</span>
           </div>
         )}
-
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <p
-              className="text-[#1C1C2E] font-medium"
-              style={{ fontFamily: 'var(--font-playfair)' }}
-            >
-              {review.customerName}
-            </p>
+            <p className="font-playfair text-warm-white font-medium">{review.customerName}</p>
             {review.verified && (
-              <Badge variant="verified">
-                <CheckCircle2 className="w-3 h-3" aria-hidden="true" />
-                Verified
-              </Badge>
+              <span className="flex items-center gap-1 text-[10px] font-sans tracking-wide text-gold-accent">
+                <CheckCircle2 className="w-3 h-3" />Verified
+              </span>
             )}
           </div>
-
           <div className="flex items-center gap-3 mt-1">
             <StarRating rating={review.rating} size="sm" />
             {review.publishedAt && (
-              <span className="text-xs text-[#A8A8B3] font-sans">
+              <span className="text-xs text-muted-light font-sans">
                 {format(new Date(review.publishedAt), 'MMM yyyy')}
               </span>
             )}
@@ -81,23 +54,15 @@ export function ReviewCard({ review, compact = false }: ReviewCardProps) {
         </div>
       </div>
 
-      {/* Review text */}
-      <p
-        className={`font-sans text-[#6B6B7B] leading-relaxed ${
-          compact ? 'text-sm line-clamp-3' : 'text-base'
-        }`}
-      >
+      {/* Text */}
+      <p className={`font-sans text-muted-light leading-relaxed ${compact ? 'text-sm line-clamp-3' : 'text-sm'}`}>
         &ldquo;{review.comment}&rdquo;
       </p>
 
-      {/* Service used */}
       {review.serviceUsed && (
-        <div className="mt-3 pt-3 border-t border-[#1C1C2E]/5">
-          <p className="text-xs font-sans text-[#A8A8B3]">
-            Service:{' '}
-            <span className="text-[#C9687A]">
-              {review.serviceUsed.name}
-            </span>
+        <div className="mt-4 pt-4 border-t border-warm-white/6">
+          <p className="text-xs font-sans text-muted-light">
+            Service: <span className="text-rose-light">{review.serviceUsed.name}</span>
           </p>
         </div>
       )}
