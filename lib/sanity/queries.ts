@@ -42,8 +42,8 @@ export const teamQuery = `
 }`
 
 export const galleryQuery = `
-*[_type == "galleryImage"] | order(_createdAt desc) {
-  _id, image, alt, caption, featured,
+*[_type == "galleryImage"] | order(order asc, _createdAt desc) {
+  _id, image, alt, caption, featured, order,
   "category": category->{ _id, name, slug }
 }`
 
@@ -68,7 +68,8 @@ export const featuredReviewsQuery = `
 export const homepageContentQuery = `
 *[_type == "homepageContent"][0] {
   heroHeadline, heroSubheadline, heroImage, heroVideoUrl,
-  ctaText, ctaLink, featuredServicesTitle, aboutTeaserText, aboutTeaserImage
+  ctaText, ctaLink, featuredServicesTitle, aboutTeaserText, aboutTeaserImage,
+  workImage1, workImage2, workImage3, workImage4
 }`
 
 export const siteSettingsQuery = `

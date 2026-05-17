@@ -34,5 +34,19 @@ export const galleryImageSchema = defineType({
       type: 'boolean',
       initialValue: false,
     }),
+    defineField({
+      name: 'order',
+      title: 'Display Order',
+      type: 'number',
+      description: 'Lower numbers appear first. Leave blank to sort by date.',
+      initialValue: 0,
+    }),
+  ],
+  orderings: [
+    {
+      title: 'Display Order',
+      name: 'orderAsc',
+      by: [{ field: 'order', direction: 'asc' }],
+    },
   ],
 })

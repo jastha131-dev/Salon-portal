@@ -100,6 +100,10 @@ export interface HomepageContent {
   featuredServicesTitle?: string
   aboutTeaserText: any // PortableText
   aboutTeaserImage: SanityImage
+  workImage1?: SanityImage
+  workImage2?: SanityImage
+  workImage3?: SanityImage
+  workImage4?: SanityImage
 }
 
 export interface SiteSettings {

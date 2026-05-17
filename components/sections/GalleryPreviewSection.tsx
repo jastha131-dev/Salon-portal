@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import { urlFor } from '@/lib/sanity/image'
-import type { GalleryImage } from '@/types'
+import type { SanityImage } from '@/types'
 
 const gradients = [
   'from-rose-light/40 to-gold-light/30',
@@ -13,13 +13,16 @@ const gradients = [
   'from-rose-primary/20 to-rose-light/30',
 ]
 
-function GalleryCell({ url, alt, gradient, label, delay }: {
-  url: string | null
+function GalleryCell({ image, alt, gradient, label, delay, w, h }: {
+  image?: SanityImage | null
   alt: string
   gradient: string
   label: string
   delay: number
+  w: number
+  h: number
 }) {
+  const url = image?.asset ? urlFor(image).width(w).height(h).url() : null
   return (
     <motion.div
       initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
@@ -37,15 +40,12 @@ function GalleryCell({ url, alt, gradient, label, delay }: {
   )
 }
 
-export function GalleryPreviewSection({ images }: { images: GalleryImage[] }) {
-  const imgs = images?.length > 0 ? images.slice(0, 4) : Array.from({ length: 4 }, (_, i) => ({
-    _id: `p-${i}`, alt: `${i + 1}`, caption: undefined, featured: false,
-    image: null as unknown as GalleryImage['image'], category: undefined,
-  }))
-
-  const url = (img: GalleryImage, w: number, h: number) =>
-    img.image?.asset ? urlFor(img.image).width(w).height(h).url() : null
-
+export function GalleryPreviewSection({ workImage1, workImage2, workImage3, workImage4 }: {
+  workImage1?: SanityImage | null
+  workImage2?: SanityImage | null
+  workImage3?: SanityImage | null
+  workImage4?: SanityImage | null
+}) {
   return (
     <section className="py-20 md:py-28 bg-charcoal">
       <div className="container-luxury">
@@ -55,22 +55,18 @@ export function GalleryPreviewSection({ images }: { images: GalleryImage[] }) {
           <div className="divider-gold w-16 mx-auto opacity-60" />
         </div>
 
-        {/* Flex layout: image1 left | right grid */}
         <div className="flex gap-3 mb-10 aspect-3/2">
-          {/* Image 1 — tall, 1/3 width */}
+          {/* Image 1 — tall left */}
           <div className="w-1/3 shrink-0">
-            <GalleryCell url={url(imgs[0], 600, 1200)} alt={imgs[0].alt || 'Gallery 1'} gradient={gradients[0]} label="1" delay={0} />
+            <GalleryCell image={workImage1} alt="Our work 1" gradient={gradients[0]} label="1" delay={0} w={600} h={1200} />
           </div>
 
-          {/* Right side — 2/3 width, 2 rows */}
+          {/* Right side — 2 rows */}
           <div className="flex-1 grid grid-cols-2 grid-rows-2 gap-3">
-            {/* Image 2 — top left */}
-            <GalleryCell url={url(imgs[1], 600, 600)} alt={imgs[1].alt || 'Gallery 2'} gradient={gradients[1]} label="2" delay={0.08} />
-            {/* Image 3 — top right */}
-            <GalleryCell url={url(imgs[2], 600, 600)} alt={imgs[2].alt || 'Gallery 3'} gradient={gradients[2]} label="3" delay={0.16} />
-            {/* Image 4 — bottom full width */}
+            <GalleryCell image={workImage2} alt="Our work 2" gradient={gradients[1]} label="2" delay={0.08} w={600} h={600} />
+            <GalleryCell image={workImage3} alt="Our work 3" gradient={gradients[2]} label="3" delay={0.16} w={600} h={600} />
             <div className="col-span-2">
-              <GalleryCell url={url(imgs[3], 1200, 600)} alt={imgs[3].alt || 'Gallery 4'} gradient={gradients[3]} label="4" delay={0.24} />
+              <GalleryCell image={workImage4} alt="Our work 4" gradient={gradients[3]} label="4" delay={0.24} w={1200} h={600} />
             </div>
           </div>
         </div>

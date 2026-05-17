@@ -5,15 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react'
 import { PageHero } from '@/components/layout/PageHero'
 import { urlFor } from '@/lib/sanity/image'
-import type { GalleryImage } from '@/types'
+import type { GalleryImage, Category } from '@/types'
 
-const filterCategories = [
-  { slug: 'all', name: 'All Work' },
-  { slug: 'hair', name: 'Hair' },
-  { slug: 'nails', name: 'Nails' },
-  { slug: 'makeup', name: 'Makeup' },
-  { slug: 'spa', name: 'Spa' },
-]
+type FilterCategory = { slug: string; name: string }
+const ALL_FILTER: FilterCategory = { slug: 'all', name: 'All Work' }
 
 const gradients = [
   'from-rose-light/30 to-gold-light/20',
@@ -26,11 +21,25 @@ const gradients = [
   'from-[#BFB5D0]/20 to-rose-light/30',
 ]
 
-// Deterministic aspect ratio pattern so SSR & client agree
-const aspectRatios = ['3/4', '4/3', '1/1', '3/4', '4/3', '3/4', '1/1', '4/3', '3/4', '1/1', '4/3', '3/4']
+// Tailwind grid-placement classes for each of 8 bento positions (4-col, 3-row grid)
+const bentoClasses = [
+  'col-start-1 col-end-2 row-start-1 row-end-3', // tall portrait — top-left
+  'col-start-2 col-end-4 row-start-1 row-end-2', // wide landscape — top-center
+  'col-start-4 col-end-5 row-start-1 row-end-3', // tall portrait — top-right
+  'col-start-2 col-end-3 row-start-2 row-end-3', // square — mid-left
+  'col-start-3 col-end-4 row-start-2 row-end-3', // square — mid-right
+  'col-start-1 col-end-3 row-start-3 row-end-4', // wide — bottom-left
+  'col-start-3 col-end-4 row-start-3 row-end-4', // square — bottom-center
+  'col-start-4 col-end-5 row-start-3 row-end-4', // square — bottom-right
+]
 
-const PLACEHOLDER_COUNT = 12
+// Tailwind aspect-ratio classes for mobile 2-col masonry (8 items)
+const mobileAspectClasses = [
+  'aspect-[2/3]', 'aspect-[4/3]', 'aspect-[4/3]', 'aspect-[2/3]',
+  'aspect-square',  'aspect-[3/4]', 'aspect-[3/4]', 'aspect-square',
+]
 
+const PLACEHOLDER_COUNT = 8
 const placeholderImages: GalleryImage[] = Array.from({ length: PLACEHOLDER_COUNT }, (_, i) => ({
   _id: `placeholder-${i}`,
   alt: `Beauty work ${i + 1}`,
@@ -46,6 +55,20 @@ export default function GalleryPage() {
   const [activeFilter, setActiveFilter] = useState('all')
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
+  const [filterCategories, setFilterCategories] = useState<FilterCategory[]>([ALL_FILTER])
+
+  useEffect(() => {
+    fetch('/api/categories')
+      .then((r) => r.json())
+      .then((d) => {
+        const cats: FilterCategory[] = (d.data || []).map((c: Category) => ({
+          slug: c.slug?.current ?? c.name.toLowerCase(),
+          name: c.name,
+        }))
+        setFilterCategories([ALL_FILTER, ...cats])
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     fetch('/api/gallery?limit=50')
@@ -90,9 +113,62 @@ export default function GalleryPage() {
     return () => window.removeEventListener('keydown', handleKey)
   }, [closeLightbox, prevImage, nextImage])
 
-  const displayImages = filtered.length > 0 ? filtered : loading ? placeholderImages : placeholderImages
+  const baseDisplay = filtered.length > 0 ? filtered : placeholderImages
+  const gridImages = baseDisplay.slice(0, 8)
+  const currentImage = lightboxIndex !== null ? baseDisplay[lightboxIndex] : null
 
-  const currentImage = lightboxIndex !== null ? displayImages[lightboxIndex] : null
+  const renderCard = (img: GalleryImage, i: number) => {
+    const imageUrl = img.image?.asset ? urlFor(img.image).width(600).url() : null
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: Math.min(i * 0.06, 0.4), duration: 0.4 }}
+        className="absolute inset-0 group cursor-pointer overflow-hidden"
+        onClick={() => openLightbox(i)}
+        role="button"
+        tabIndex={0}
+        aria-label={img.alt || `Gallery image ${i + 1}`}
+        onKeyDown={(e) => e.key === 'Enter' && openLightbox(i)}
+      >
+        <div className={`absolute inset-0 bg-linear-to-br ${gradients[i % gradients.length]}`} />
+
+        {imageUrl ? (
+          <Image
+            src={imageUrl}
+            alt={img.alt || `Gallery image ${i + 1}`}
+            fill
+            unoptimized
+            priority={i === 0}
+            className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="font-playfair text-5xl text-rose-primary/20 select-none">{i + 1}</span>
+          </div>
+        )}
+
+        <div className="absolute inset-0 bg-charcoal/0 group-hover:bg-charcoal/50 transition-colors duration-300 flex items-center justify-center">
+          <ZoomIn className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-all duration-300 scale-75 group-hover:scale-100" />
+        </div>
+
+        {img.caption && (
+          <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-charcoal/90 via-charcoal/40 to-transparent p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+            <p className="font-sans text-xs text-warm-white leading-relaxed">{img.caption}</p>
+          </div>
+        )}
+
+        {img.category?.name && (
+          <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <span className="bg-rose-primary/90 text-white font-sans text-[10px] tracking-widest uppercase px-2.5 py-1">
+              {img.category.name}
+            </span>
+          </div>
+        )}
+      </motion.div>
+    )
+  }
 
   return (
     <>
@@ -103,7 +179,6 @@ export default function GalleryPage() {
         dark
       />
 
-      {/* ── Category Filters + Grid ────────────────────────── */}
       <section className="py-16 md:py-24 bg-charcoal">
         <div className="container-luxury">
 
@@ -111,6 +186,7 @@ export default function GalleryPage() {
           <div className="flex flex-wrap items-center justify-center gap-3 mb-12">
             {filterCategories.map((cat) => (
               <button
+                type="button"
                 key={cat.slug}
                 onClick={() => setActiveFilter(cat.slug)}
                 className={`px-6 py-2.5 font-sans text-xs tracking-widest uppercase transition-all duration-300 focus-luxury ${
@@ -124,20 +200,23 @@ export default function GalleryPage() {
             ))}
           </div>
 
-          {/* Loading skeleton */}
+          {/* Loading skeletons */}
           {loading && (
-            <div className="columns-2 md:columns-3 lg:columns-4 gap-3">
-              {Array.from({ length: PLACEHOLDER_COUNT }).map((_, i) => (
-                <div
-                  key={i}
-                  className="break-inside-avoid mb-3 bg-warm-white/5 animate-pulse"
-                  style={{ aspectRatio: aspectRatios[i % aspectRatios.length] }}
-                />
-              ))}
-            </div>
+            <>
+              <div className="hidden md:grid grid-cols-4 gap-3 auto-rows-[190px]">
+                {bentoClasses.map((cls, i) => (
+                  <div key={i} className={`bg-warm-white/5 animate-pulse ${cls}`} />
+                ))}
+              </div>
+              <div className="md:hidden columns-2 gap-3">
+                {mobileAspectClasses.map((cls, i) => (
+                  <div key={i} className={`break-inside-avoid mb-3 bg-warm-white/5 animate-pulse ${cls}`} />
+                ))}
+              </div>
+            </>
           )}
 
-          {/* Masonry Grid */}
+          {/* Grid */}
           {!loading && (
             <AnimatePresence mode="wait">
               <motion.div
@@ -146,76 +225,24 @@ export default function GalleryPage() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.4 }}
-                className="columns-2 md:columns-3 lg:columns-4 gap-3"
               >
-                {displayImages.map((img, i) => {
-                  const imageUrl = img.image?.asset
-                    ? urlFor(img.image).width(600).url()
-                    : null
-                  const ratio = aspectRatios[i % aspectRatios.length]
+                {/* Desktop — 4-col bento */}
+                <div className="hidden md:grid grid-cols-4 gap-3 auto-rows-[190px]">
+                  {gridImages.map((img, i) => (
+                    <div key={img._id} className={`relative ${bentoClasses[i] ?? ''}`}>
+                      {renderCard(img, i)}
+                    </div>
+                  ))}
+                </div>
 
-                  return (
-                    <motion.div
-                      key={img._id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: Math.min(i * 0.04, 0.4), duration: 0.4 }}
-                      className="relative group cursor-pointer overflow-hidden break-inside-avoid mb-3"
-                      onClick={() => openLightbox(i)}
-                      role="button"
-                      tabIndex={0}
-                      aria-label={img.alt || `Gallery image ${i + 1}`}
-                      onKeyDown={(e) => e.key === 'Enter' && openLightbox(i)}
-                    >
-                      <div
-                        className={`relative w-full bg-gradient-to-br ${gradients[i % gradients.length]}`}
-                        style={{ aspectRatio: ratio }}
-                      >
-                        {imageUrl ? (
-                          <Image
-                            src={imageUrl}
-                            alt={img.alt || `Gallery image ${i + 1}`}
-                            fill
-                            unoptimized
-                            priority={i === 0}
-                            className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                          />
-                        ) : (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="font-playfair text-5xl text-rose-primary/20 select-none">
-                              {i + 1}
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Hover overlay */}
-                        <div className="absolute inset-0 bg-charcoal/0 group-hover:bg-charcoal/50 transition-colors duration-300 flex items-center justify-center">
-                          <ZoomIn className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-all duration-300 scale-75 group-hover:scale-100" />
-                        </div>
-
-                        {/* Caption reveal */}
-                        {img.caption && (
-                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-charcoal/90 via-charcoal/40 to-transparent p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                            <p className="font-sans text-xs text-warm-white leading-relaxed">
-                              {img.caption}
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Category badge */}
-                        {img.category?.name && (
-                          <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <span className="bg-rose-primary/90 text-white font-sans text-[10px] tracking-widest uppercase px-2.5 py-1">
-                              {img.category.name}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </motion.div>
-                  )
-                })}
+                {/* Mobile — 2-col masonry */}
+                <div className="md:hidden columns-2 gap-3">
+                  {gridImages.map((img, i) => (
+                    <div key={img._id} className={`relative break-inside-avoid mb-3 ${mobileAspectClasses[i % mobileAspectClasses.length]}`}>
+                      {renderCard(img, i)}
+                    </div>
+                  ))}
+                </div>
               </motion.div>
             </AnimatePresence>
           )}
@@ -225,6 +252,7 @@ export default function GalleryPage() {
             <div className="text-center py-20">
               <p className="font-playfair text-2xl text-warm-white mb-3">No images in this category</p>
               <button
+                type="button"
                 onClick={() => setActiveFilter('all')}
                 className="font-sans text-sm text-rose-light hover:text-rose-primary transition-colors tracking-wider underline underline-offset-4"
               >
@@ -236,7 +264,7 @@ export default function GalleryPage() {
         </div>
       </section>
 
-      {/* ── Booking CTA strip ─────────────────────────────── */}
+      {/* ── Booking CTA ───────────────────────────────────── */}
       <section className="py-14 bg-rose-primary">
         <div className="container-luxury text-center">
           <p className="font-cormorant italic text-warm-white/80 text-xl tracking-widest mb-2">
@@ -262,14 +290,14 @@ export default function GalleryPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center"
+            className="fixed inset-0 z-100 bg-black/95 flex items-center justify-center"
             onClick={closeLightbox}
             role="dialog"
             aria-modal="true"
             aria-label="Image lightbox"
           >
-            {/* Close */}
             <button
+              type="button"
               onClick={closeLightbox}
               className="absolute top-5 right-5 text-white/70 hover:text-rose-light transition-colors z-20 p-2 hover:bg-white/10 rounded-full"
               aria-label="Close lightbox"
@@ -277,8 +305,8 @@ export default function GalleryPage() {
               <X className="w-7 h-7" />
             </button>
 
-            {/* Prev */}
             <button
+              type="button"
               onClick={(e) => { e.stopPropagation(); prevImage() }}
               disabled={lightboxIndex === 0}
               className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 text-white/70 hover:text-rose-light transition-colors z-20 p-3 hover:bg-white/10 rounded-full disabled:opacity-20 disabled:cursor-not-allowed"
@@ -287,25 +315,23 @@ export default function GalleryPage() {
               <ChevronLeft className="w-8 h-8" />
             </button>
 
-            {/* Next */}
             <button
+              type="button"
               onClick={(e) => { e.stopPropagation(); nextImage() }}
-              disabled={lightboxIndex === displayImages.length - 1}
+              disabled={lightboxIndex === baseDisplay.length - 1}
               className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 text-white/70 hover:text-rose-light transition-colors z-20 p-3 hover:bg-white/10 rounded-full disabled:opacity-20 disabled:cursor-not-allowed"
               aria-label="Next image"
             >
               <ChevronRight className="w-8 h-8" />
             </button>
 
-            {/* Image container */}
             <motion.div
               key={lightboxIndex}
               initial={{ scale: 0.92, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.92, opacity: 0 }}
               transition={{ duration: 0.28, ease: [0.25, 0.1, 0.25, 1] }}
-              className="relative mx-16 md:mx-24 flex items-center justify-center"
-              style={{ maxWidth: '900px', maxHeight: '85vh', width: '100%', height: '85vh' }}
+              className="relative mx-16 md:mx-24 flex items-center justify-center gallery-lightbox-box"
               onClick={(e) => e.stopPropagation()}
             >
               {currentImage.image?.asset ? (
@@ -319,9 +345,7 @@ export default function GalleryPage() {
                   sizes="(max-width: 1024px) 90vw, 900px"
                 />
               ) : (
-                <div
-                  className={`w-full h-full bg-gradient-to-br ${gradients[lightboxIndex % gradients.length]} flex items-center justify-center`}
-                >
+                <div className={`w-full h-full bg-linear-to-br ${gradients[lightboxIndex % gradients.length]} flex items-center justify-center`}>
                   <span className="font-playfair text-9xl text-white/10 select-none">
                     {lightboxIndex + 1}
                   </span>
@@ -329,36 +353,29 @@ export default function GalleryPage() {
               )}
             </motion.div>
 
-            {/* Footer: counter + caption */}
             <div className="absolute bottom-5 left-1/2 -translate-x-1/2 text-center space-y-1.5">
               {currentImage.caption && (
-                <p className="font-sans text-sm text-white/80 max-w-sm mx-auto">
-                  {currentImage.caption}
-                </p>
+                <p className="font-sans text-sm text-white/80 max-w-sm mx-auto">{currentImage.caption}</p>
               )}
               <span className="font-sans text-xs text-white/40 tracking-widest">
-                {lightboxIndex + 1} / {displayImages.length}
+                {lightboxIndex + 1} / {baseDisplay.length}
               </span>
             </div>
 
-            {/* Thumbnail strip */}
             <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-1.5 max-w-xs overflow-hidden">
-              {displayImages.slice(Math.max(0, lightboxIndex - 3), lightboxIndex + 4).map((img, idx) => {
+              {baseDisplay.slice(Math.max(0, lightboxIndex - 3), lightboxIndex + 4).map((img, idx) => {
                 const realIdx = Math.max(0, lightboxIndex - 3) + idx
                 return (
                   <button
+                    type="button"
                     key={img._id}
                     onClick={(e) => { e.stopPropagation(); setLightboxIndex(realIdx) }}
-                    className={`w-10 h-10 flex-shrink-0 overflow-hidden transition-all duration-200 ${
-                      realIdx === lightboxIndex
-                        ? 'ring-2 ring-rose-primary opacity-100'
-                        : 'opacity-40 hover:opacity-70'
+                    className={`w-10 h-10 shrink-0 overflow-hidden transition-all duration-200 ${
+                      realIdx === lightboxIndex ? 'ring-2 ring-rose-primary opacity-100' : 'opacity-40 hover:opacity-70'
                     }`}
                     aria-label={`Go to image ${realIdx + 1}`}
                   >
-                    <div
-                      className={`w-full h-full bg-gradient-to-br ${gradients[realIdx % gradients.length]}`}
-                    />
+                    <div className={`w-full h-full bg-linear-to-br ${gradients[realIdx % gradients.length]}`} />
                   </button>
                 )
               })}

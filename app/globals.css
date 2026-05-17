@@ -323,3 +323,10 @@ h1, h2, h3, h4 {
   backdrop-filter: blur(16px);
   border: 1px solid rgba(201, 104, 122, 0.12);
 }
+
+.gallery-lightbox-box {
+  max-width: 900px;
+  max-height: 85vh;
+  width: 100%;
+  height: 85vh;
+}

@@ -53,5 +53,29 @@ export const homepageContentSchema = defineType({
       type: 'image',
       options: { hotspot: true },
     }),
+    defineField({
+      name: 'workImage1',
+      title: 'Our Work — Image 1 (tall left)',
+      type: 'image',
+      options: { hotspot: true },
+    }),
+    defineField({
+      name: 'workImage2',
+      title: 'Our Work — Image 2 (top center-left)',
+      type: 'image',
+      options: { hotspot: true },
+    }),
+    defineField({
+      name: 'workImage3',
+      title: 'Our Work — Image 3 (top center-right)',
+      type: 'image',
+      options: { hotspot: true },
+    }),
+    defineField({
+      name: 'workImage4',
+      title: 'Our Work — Image 4 (bottom wide)',
+      type: 'image',
+      options: { hotspot: true },
+    }),
   ],
 })
